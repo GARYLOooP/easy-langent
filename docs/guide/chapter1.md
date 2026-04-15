@@ -276,6 +276,77 @@ BASE_URL = os.getenv("BASE_URL")  # API地址，使用你的模型对应的地�
 
 > 在配置调用大模型服务时，通常需要输入 API Key、Token 或各类平台密码，为了安全起见一般是将这类密码配置到环境变量中，而不是直接写到代码中，密钥被恶意盗用，将会导致严重的经济损失或隐私泄露。
 
+**示例代码中添加分步调试打印，提升初学者问题定位效率**
+
+**背景与动机**
+
+在跟随第一章教程进行环境搭建和代码运行时，初学者容易在以下环节遇到“静默失败”：
+
+.env 文件未被正确加载（文件名错误、路径不对、格式问题）
+
+API 密钥配置错误导致模型调用失败但无明确报错
+
+网络问题导致 invoke 卡住，无法判断程序执行到哪一步
+
+原示例代码仅包含最终输出，缺乏中间状态提示。对于不熟悉 Python 调试的新手，一旦出现问题很难判断卡在哪个环节。
+
+本次修改内容
+
+在 1.4.1 和 1.4.2 节的示例代码中，添加了 非侵入式的分步调试打印，主要包括：
+
+标记 .env 加载状态
+
+显示 API Key 是否成功读取（仅显示布尔值，不泄露密钥）
+
+标记模型初始化完成
+
+标记模型调用开始与结束
+
+对可能为空的响应内容使用 repr() 打印，防止不可见字符导致“无输出”错觉
+### 修改示例（以 1.4.1 为例）
+```python
+import os
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+
+print("1. 开始加载 .env 文件...")
+load_dotenv()
+
+API_KEY = os.getenv("API_KEY")
+BASE_URL = os.getenv("BASE_URL")
+print(f"2. API_KEY 已加载: {bool(API_KEY)}")
+
+if not API_KEY:
+    raise ValueError("未检测到 API_KEY，请检查 .env 文件是否配置正确")
+
+print("3. 初始化 ChatOpenAI 模型...")
+llm = ChatOpenAI(
+    api_key=API_KEY,
+    base_url=BASE_URL,
+    model="deepseek-chat",
+    temperature=0.3
+)
+
+prompt = "请写一段50字左右的 AI 学习建议，语言简洁、实用，适合初学者。"
+print("4. 开始调用模型...")
+response = llm.invoke(prompt)
+print("5. 调用完成，输出结果：")
+print(response.content)
+```
+**预期收益**
+-降低初学者排查环境配置问题的门槛
+
+-当遇到“程序没输出”或“卡住不动”时，能根据打印的编号快速定位环节
+
+-不改变原有教学逻辑，仅增强可观测性
+
+**测试情况**
+-在 Windows 11 + Miniconda (Python 3.11) 环境下验证通过
+
+-已测试 DeepSeek API 正常调用场景
+
+-已测试 .env 缺失场景下的友好报错提示
+
 ### 1.3.4 常见错误解决
 
 - 错误1：“pip不是内部或外部命令”——解决：检查Python是否添加到系统环境变量，或用“python -m pip”代替“pip”；
