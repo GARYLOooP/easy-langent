@@ -60,6 +60,10 @@ session_id 是用户的唯一标识，不同 session_id 的对话记忆相互隔
 # 安装完整依赖
 pip install langchain langchain-openai python-dotenv langchain-experimental
 ```
+课程3使用的安装依赖，会存在网络问题，推荐使用清华源
+# 安装完整依赖
+pip install langchain-openai -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
 
 **.env 文件**示例
 
